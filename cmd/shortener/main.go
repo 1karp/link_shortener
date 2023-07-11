@@ -37,7 +37,7 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		responseData, err := io.ReadAll(r.Body)
-		if err != nil {
+		if err != nil || string(responseData) == "" {
 			http.Error(w, "Invalid POST body!", http.StatusBadRequest)
 			return
 		}
