@@ -43,11 +43,11 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		url := string(responseData)
 
-		shortUrl := randSeqGen()
-		storage[shortUrl] = url
+		shortURL := randSeqGen()
+		storage[shortURL] = url
 
 		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte("http://" + r.Host + "/" + shortUrl))
+		w.Write([]byte("http://" + r.Host + "/" + shortURL))
 		return
 	}
 
