@@ -37,17 +37,17 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		responseData, err := io.ReadAll(r.Body)
-		if err != nil {
+		if err != nil || string(responseData) == "" {
 			http.Error(w, "Invalid POST body!", http.StatusBadRequest)
 			return
 		}
 		url := string(responseData)
 
-		shortUrl := randSeqGen()
-		storage[shortUrl] = url
+		shortURL := randSeqGen()
+		storage[shortURL] = url
 
 		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte("http://" + r.Host + "/" + shortUrl))
+		w.Write([]byte("http://" + r.Host + "/" + shortURL))
 		return
 	}
 
