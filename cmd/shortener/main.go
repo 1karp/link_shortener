@@ -5,8 +5,9 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"strings"
 	"time"
+
+	"github.com/go-chi/chi/v5"
 )
 
 var storage = make(map[string]string, 100)
@@ -28,33 +29,32 @@ func randSeqGen() string {
 }
 
 func mainHandler(w http.ResponseWriter, r *http.Request) {
-	d := strings.TrimPrefix(r.URL.Path, "/")
 
-	if d == "" {
-		if r.Method != http.MethodPost {
-			http.Error(w, "Only POST requests are allowed!", http.StatusBadRequest)
-			return
-		}
-
-		responseData, err := io.ReadAll(r.Body)
-		if err != nil || string(responseData) == "" {
-			http.Error(w, "Invalid POST body!", http.StatusBadRequest)
-			return
-		}
-		url := string(responseData)
-
-		shortURL := randSeqGen()
-		storage[shortURL] = url
-
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte("http://" + r.Host + "/" + shortURL))
+	if r.Method != http.MethodPost {
+		http.Error(w, "Only POST requests are allowed!", http.StatusBadRequest)
 		return
 	}
 
-	if r.Method != http.MethodGet {
-		http.Error(w, "Only GET requests are allowed!", http.StatusBadRequest)
+	responseData, err := io.ReadAll(r.Body)
+	if err != nil || string(responseData) == "" {
+		http.Error(w, "Invalid POST body!", http.StatusBadRequest)
 		return
 	}
+	url := string(responseData)
+
+	shortURL := randSeqGen()
+	storage[shortURL] = url
+
+	w.WriteHeader(http.StatusCreated)
+	_, errWrite := w.Write([]byte("http://" + r.Host + "/" + shortURL))
+	if errWrite != nil {
+		panic(errWrite)
+	}
+
+}
+
+func shortenedHandler(w http.ResponseWriter, r *http.Request) {
+	d := chi.URLParam(r, "id")
 
 	if full, ok := storage[d]; ok {
 		w.Header().Add("Location", full)
@@ -66,7 +66,10 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", mainHandler)
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	r := chi.NewRouter()
+	r.Route("/", func(r chi.Router) {
+		r.Post("/", mainHandler)
+		r.Get("/{id}", shortenedHandler)
+	})
+	log.Fatal(http.ListenAndServe("localhost:8080", r))
 }
