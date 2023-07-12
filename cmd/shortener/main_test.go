@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_mainHandler(t *testing.T) {
@@ -77,8 +78,12 @@ func Test_mainHandler(t *testing.T) {
 			request := httptest.NewRequest(tt.method, tt.request, body)
 			w := httptest.NewRecorder()
 			mainHandler(w, request)
-			res := w.Result()
-			assert.Equal(t, res.StatusCode, tt.want.statusCode)
+			result := w.Result()
+
+			err := result.Body.Close()
+			require.NoError(t, err)
+
+			assert.Equal(t, result.StatusCode, tt.want.statusCode)
 
 		})
 	}
