@@ -18,9 +18,9 @@ type Config struct {
 func NewConfig() (Config, error) {
 	config := Config{}
 
-	address, ok := os.LookupEnv("SERVER_ADDRESS")
+	serverAddress, ok := os.LookupEnv("SERVER_ADDRESS")
 	if ok {
-		host, port, err := parseAddress(config, address)
+		host, port, err := parseServerAddress(serverAddress)
 		if err != nil {
 			return config, err
 		}
@@ -34,7 +34,7 @@ func NewConfig() (Config, error) {
 			return nil
 		}
 
-		host, port, err := parseAddress(config, address)
+		host, port, err := parseServerAddress(address)
 		if err != nil {
 			return err
 		}
@@ -45,14 +45,14 @@ func NewConfig() (Config, error) {
 		return nil
 	})
 
-	baseAddressForShortURL, ok := os.LookupEnv("BASE_URL")
+	baseURL, ok := os.LookupEnv("BASE_URL")
 	if ok {
-		_, err := url.ParseRequestURI(baseAddressForShortURL)
+		_, err := url.ParseRequestURI(baseURL)
 		if err != nil {
-			return config, errors.New("need valid address for short URL in a form scheme://host:port/")
+			return config, errors.New("need valid address for short URL in the format scheme://host:port/")
 		}
 
-		config.BaseShortURLAddress = baseAddressForShortURL
+		config.BaseShortURLAddress = baseURL
 	}
 
 	flag.Func("b", "Base address for short URL", func(flagValue string) error {
@@ -62,7 +62,7 @@ func NewConfig() (Config, error) {
 
 		_, err := url.ParseRequestURI(flagValue)
 		if err != nil {
-			return errors.New("need valid address for short URL in a form scheme://host:port/")
+			return errors.New("need valid address for short URL in the format scheme://host:port/")
 		}
 
 		config.BaseShortURLAddress = flagValue
@@ -91,10 +91,10 @@ func (c *Config) GetAddress() string {
 	return c.Host + ":" + strconv.Itoa(c.Port)
 }
 
-func parseAddress(config Config, address string) (host string, port int, err error) {
+func parseServerAddress(address string) (host string, port int, err error) {
 	splitAddress := strings.Split(address, ":")
 	if len(splitAddress) != 2 {
-		return "", 0, errors.New("need HTTP server address in a form host:port")
+		return "", 0, errors.New("need HTTP server address in the format host:port")
 	}
 
 	port, err = strconv.Atoi(splitAddress[1])
