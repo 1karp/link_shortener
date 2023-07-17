@@ -19,5 +19,5 @@ func NewServer(config config.Config, router http.Handler) *Server {
 }
 
 func (srv *Server) Start() error {
-	return http.ListenAndServe(srv.config.Address, srv.router)
+	return http.ListenAndServe(srv.config.GetAddress(), srv.router)
 }

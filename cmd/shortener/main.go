@@ -16,7 +16,7 @@ func main() {
 
 	router := router.NewRouter(cfg)
 
-	log.Printf("Starting server on %s\n", cfg.Address)
+	log.Printf("Starting server on %s\n", cfg.GetAddress())
 
 	server := server.NewServer(cfg, router.Router)
 

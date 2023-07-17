@@ -1,60 +1,106 @@
 package config
 
 import (
+	"errors"
 	"flag"
-	"net/http"
+	"net/url"
 	"os"
+	"strconv"
 	"strings"
 )
 
 type Config struct {
-	Address             string
+	Host                string
+	Port                int
 	BaseShortURLAddress string
 }
 
 func NewConfig() (Config, error) {
-	config := Config{
-		Address:             "localhost:8080",
-		BaseShortURLAddress: "http://localhost:8080/",
+	config := Config{}
+
+	address, ok := os.LookupEnv("SERVER_ADDRESS")
+	if ok {
+		host, port, err := parseAddress(config, address)
+		if err != nil {
+			return config, err
+		}
+
+		config.Host = host
+		config.Port = port
 	}
 
-	flag.StringVar(&config.Address, "address", "localhost:8080", "HTTP server address")
-	flag.StringVar(&config.BaseShortURLAddress, "base-url", "http://localhost:8080/", "Base address for short URL")
+	flag.Func("a", "HTTP server address", func(address string) error {
+		if config.Host != "" && config.Port != 0 {
+			return nil
+		}
+
+		host, port, err := parseAddress(config, address)
+		if err != nil {
+			return err
+		}
+
+		config.Host = host
+		config.Port = port
+
+		return nil
+	})
+
+	baseAddressForShortURL, ok := os.LookupEnv("BASE_URL")
+	if ok {
+		_, err := url.ParseRequestURI(baseAddressForShortURL)
+		if err != nil {
+			return config, errors.New("need valid address for short URL in a form scheme://host:port/")
+		}
+
+		config.BaseShortURLAddress = baseAddressForShortURL
+	}
+
+	flag.Func("b", "Base address for short URL", func(flagValue string) error {
+		if config.BaseShortURLAddress != "" {
+			return nil
+		}
+
+		_, err := url.ParseRequestURI(flagValue)
+		if err != nil {
+			return errors.New("need valid address for short URL in a form scheme://host:port/")
+		}
+
+		config.BaseShortURLAddress = flagValue
+
+		return nil
+	})
 
 	flag.Parse()
 
-	if address, ok := os.LookupEnv("SERVER_ADDRESS"); ok {
-		config.Address = address
+	if config.Host == "" {
+		config.Host = "localhost"
 	}
 
-	if baseURL, ok := os.LookupEnv("BASE_URL"); ok {
-		config.BaseShortURLAddress = baseURL
+	if config.Port == 0 {
+		config.Port = 8080
 	}
 
-	err := config.validate()
-	if err != nil {
-		return Config{}, err
+	if config.BaseShortURLAddress == "" {
+		config.BaseShortURLAddress = "http://localhost:8080/"
 	}
-
-	config.normalize()
 
 	return config, nil
 }
 
-func (c *Config) validate() error {
-	_, err := http.NewRequest("GET", c.Address, nil)
-	if err != nil {
-		return err
-	}
-
-	_, err = http.NewRequest("GET", c.BaseShortURLAddress, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (c *Config) GetAddress() string {
+	return c.Host + ":" + strconv.Itoa(c.Port)
 }
 
-func (c *Config) normalize() {
-	c.BaseShortURLAddress = strings.TrimSuffix(c.BaseShortURLAddress, "/")
+func parseAddress(config Config, address string) (host string, port int, err error) {
+	splitAddress := strings.Split(address, ":")
+	if len(splitAddress) != 2 {
+		return "", 0, errors.New("need HTTP server address in a form host:port")
+	}
+
+	port, err = strconv.Atoi(splitAddress[1])
+	if err != nil {
+		return "", 0, err
+	}
+
+	return splitAddress[0], port, nil
 }
