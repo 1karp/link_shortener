@@ -2,21 +2,23 @@ package main
 
 import (
 	"log"
-	"net/http"
 
 	"github.com/1karp/go-musthave-shortener-tpl/internal/app/config"
-	"github.com/1karp/go-musthave-shortener-tpl/internal/app/handlers"
-	"github.com/go-chi/chi/v5"
+	"github.com/1karp/go-musthave-shortener-tpl/internal/app/router"
+	"github.com/1karp/go-musthave-shortener-tpl/internal/app/server"
 )
 
 func main() {
 	cfg := config.NewConfig()
 
-	r := chi.NewRouter()
-	r.Post("/", handlers.MainHandler)
-	r.Get("/{id}", handlers.ShortenedHandler)
+	router := router.NewRouter(cfg)
 
 	log.Printf("Starting server on %s\n", cfg.GetAddress())
 
-	log.Fatal(http.ListenAndServe(cfg.GetAddress(), r))
+	server := server.NewServer(cfg, router.Router)
+
+	err := server.Start()
+	if err != nil {
+		panic(err)
+	}
 }
