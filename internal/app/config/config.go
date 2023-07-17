@@ -1,8 +1,12 @@
 package config
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"net/url"
+	"strconv"
+	"strings"
 )
 
 type Config struct {
@@ -12,17 +16,43 @@ type Config struct {
 }
 
 func NewConfig() Config {
-	hostFlag := flag.String("a", "localhost", "HTTP server host")
-	portFlag := flag.Int("p", 8080, "HTTP server port")
-	baseURLFlag := flag.String("b", "http://localhost:8080/", "Base address for short URL")
+	config := Config{
+		Host:                "localhost",
+		Port:                8080,
+		BaseShortURLAddress: "http://localhost:8080/",
+	}
+
+	flag.Func("a", "HTTP server address", func(flagValue string) error {
+		splitAddress := strings.Split(flagValue, ":")
+		if len(splitAddress) != 2 {
+			return errors.New("need HTTP server address in a form host:port")
+		}
+
+		port, err := strconv.Atoi(splitAddress[1])
+		if err != nil {
+			return err
+		}
+
+		config.Host = splitAddress[0]
+		config.Port = port
+
+		return nil
+	})
+
+	flag.Func("b", "Base address for short URL", func(flagValue string) error {
+		_, err := url.ParseRequestURI(flagValue)
+		if err != nil {
+			return errors.New("need valid address for short URL in a form scheme://host:port/")
+		}
+
+		config.BaseShortURLAddress = flagValue
+
+		return nil
+	})
 
 	flag.Parse()
 
-	return Config{
-		Host:                *hostFlag,
-		Port:                *portFlag,
-		BaseShortURLAddress: *baseURLFlag,
-	}
+	return config
 }
 
 func (c *Config) GetAddress() string {
