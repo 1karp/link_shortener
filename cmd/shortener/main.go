@@ -18,7 +18,7 @@ func init() {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
-func randSeqGen() string {
+func generateShortURL() string {
 	shortURL := make([]byte, 8)
 
 	for i := range shortURL {
@@ -29,20 +29,19 @@ func randSeqGen() string {
 }
 
 func mainHandler(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method != http.MethodPost {
 		http.Error(w, "Only POST requests are allowed!", http.StatusBadRequest)
 		return
 	}
 
-	responseData, err := io.ReadAll(r.Body)
-	if err != nil || string(responseData) == "" {
+	body, err := io.ReadAll(r.Body)
+	if err != nil || string(body) == "" {
 		http.Error(w, "Invalid POST body!", http.StatusBadRequest)
 		return
 	}
-	url := string(responseData)
 
-	shortURL := randSeqGen()
+	url := string(body)
+	shortURL := generateShortURL()
 	storage[shortURL] = url
 
 	w.WriteHeader(http.StatusCreated)
@@ -50,14 +49,13 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 	if errWrite != nil {
 		panic(errWrite)
 	}
-
 }
 
 func shortenedHandler(w http.ResponseWriter, r *http.Request) {
-	d := chi.URLParam(r, "id")
+	shortURL := chi.URLParam(r, "id")
 
-	if full, ok := storage[d]; ok {
-		w.Header().Add("Location", full)
+	if fullURL, ok := storage[shortURL]; ok {
+		w.Header().Add("Location", fullURL)
 		w.WriteHeader(http.StatusTemporaryRedirect)
 		return
 	}
@@ -67,9 +65,8 @@ func shortenedHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	r := chi.NewRouter()
-	r.Route("/", func(r chi.Router) {
-		r.Post("/", mainHandler)
-		r.Get("/{id}", shortenedHandler)
-	})
+	r.Post("/", mainHandler)
+	r.Get("/{id}", shortenedHandler)
+
 	log.Fatal(http.ListenAndServe("localhost:8080", r))
 }
