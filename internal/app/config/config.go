@@ -12,21 +12,29 @@ type Config struct {
 }
 
 func NewConfig() Config {
-	config := Config{}
+	config := Config{
+		Host:                "localhost",
+		Port:                8080,
+		BaseShortURLAddress: "http://localhost:8080/",
+	}
 
-	flag.StringVar(&config.Host, "host", "localhost", "HTTP server host")
-	flag.IntVar(&config.Port, "port", 8080, "HTTP server port")
-	flag.StringVar(&config.BaseShortURLAddress, "base-url", "", "Base address for short URL")
+	hostFlag := flag.String("host", "localhost", "HTTP server host")
+	portFlag := flag.Int("port", 8080, "HTTP server port")
+	baseURLFlag := flag.String("base-url", "http://localhost:8080/", "Base address for short URL")
 
 	flag.Parse()
+
+	config.Host = *hostFlag
+	config.Port = *portFlag
+	config.BaseShortURLAddress = *baseURLFlag
 
 	return config
 }
 
-func (c *Config) GetAddress() string {
-	return c.Host + ":" + strconv.Itoa(c.Port)
+func (cfg *Config) GetAddress() string {
+	return cfg.Host + ":" + strconv.Itoa(cfg.Port)
 }
 
-func (c *Config) GetBaseShortURLAddress() string {
-	return c.BaseShortURLAddress
+func (cfg *Config) GetBaseShortURLAddress() string {
+	return cfg.BaseShortURLAddress
 }
