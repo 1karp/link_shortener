@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"regexp"
@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_mainHandler(t *testing.T) {
+func Test_MainHandler(t *testing.T) {
 	tests := []struct {
 		name    string
 		method  string
@@ -59,7 +59,7 @@ func Test_mainHandler(t *testing.T) {
 			body := strings.NewReader(tt.body)
 			request := httptest.NewRequest(tt.method, tt.request, body)
 			w := httptest.NewRecorder()
-			mainHandler(w, request)
+			MainHandler(w, request)
 			result := w.Result()
 
 			err := result.Body.Close()
