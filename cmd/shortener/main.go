@@ -9,15 +9,18 @@ import (
 )
 
 func main() {
-	cfg := config.NewConfig()
+	cfg, err := config.NewConfig()
+	if err != nil {
+		panic(err)
+	}
 
 	router := router.NewRouter(cfg)
 
-	log.Printf("Starting server on %s\n", cfg.GetAddress())
+	log.Printf("Starting server on %s\n", cfg.Address)
 
 	server := server.NewServer(cfg, router.Router)
 
-	err := server.Start()
+	err = server.Start()
 	if err != nil {
 		panic(err)
 	}
