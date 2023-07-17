@@ -9,10 +9,7 @@ import (
 )
 
 func main() {
-	cfg, err := config.NewConfig()
-	if err != nil {
-		panic(err)
-	}
+	cfg := config.NewConfig()
 
 	router := router.NewRouter(cfg)
 
@@ -20,7 +17,7 @@ func main() {
 
 	server := server.NewServer(cfg, router.Router)
 
-	err = server.Start()
+	err := server.Start()
 	if err != nil {
 		panic(err)
 	}
