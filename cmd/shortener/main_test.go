@@ -62,6 +62,9 @@ func Test_mainHandler(t *testing.T) {
 			mainHandler(w, request)
 			result := w.Result()
 
+			err := result.Body.Close()
+			require.NoError(t, err)
+
 			require.Equal(t, tt.want, result.StatusCode)
 		})
 	}

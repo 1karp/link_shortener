@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+
+	"github.com/1karp/go-musthave-shortener-tpl/internal/app/config"
 )
 
 var storage = make(map[string]string, 100)
@@ -64,9 +66,13 @@ func shortenedHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	cfg := config.NewConfig()
+
 	r := chi.NewRouter()
 	r.Post("/", mainHandler)
 	r.Get("/{id}", shortenedHandler)
 
-	log.Fatal(http.ListenAndServe("localhost:8080", r))
+	log.Printf("Starting server on %s\n", cfg.GetAddress())
+
+	log.Fatal(http.ListenAndServe(cfg.GetAddress(), r))
 }
