@@ -4,21 +4,20 @@ import (
 	"log"
 
 	"github.com/1karp/go-musthave-shortener-tpl/internal/app/config"
-	"github.com/1karp/go-musthave-shortener-tpl/internal/app/router"
 	"github.com/1karp/go-musthave-shortener-tpl/internal/app/server"
+	"github.com/1karp/go-musthave-shortener-tpl/internal/app/storage"
 )
 
 func main() {
 	cfg, err := config.NewConfig()
 	if err != nil {
-		panic(err)
+		log.Fatalf("No config found: %v", err)
 	}
 
-	router := router.NewRouter(cfg)
+	stor := storage.NewStorage()
 
 	log.Printf("Starting server on %s\n", cfg.GetAddress())
-
-	server := server.NewServer(cfg, router.Router)
+	server := server.NewServer(cfg, stor)
 
 	err = server.Start()
 	if err != nil {

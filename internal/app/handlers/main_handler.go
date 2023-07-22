@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"io"
+	"log"
 	"math/rand"
 	"net/http"
 
@@ -20,12 +21,7 @@ func generateShortURL() string {
 	return string(shortURL)
 }
 
-func MainHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Only POST requests are allowed!", http.StatusBadRequest)
-		return
-	}
-
+func MainHandler(w http.ResponseWriter, r *http.Request, s storage.Storage) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil || string(body) == "" {
 		http.Error(w, "Invalid POST body!", http.StatusBadRequest)
@@ -34,11 +30,12 @@ func MainHandler(w http.ResponseWriter, r *http.Request) {
 
 	url := string(body)
 	shortURL := generateShortURL()
-	storage.Set(shortURL, url)
+	s.Set(shortURL, url)
 
 	w.WriteHeader(http.StatusCreated)
 	_, errWrite := w.Write([]byte("http://" + r.Host + "/" + shortURL))
 	if errWrite != nil {
-		panic(errWrite)
+		log.Printf("Error writing response: %v", errWrite)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }

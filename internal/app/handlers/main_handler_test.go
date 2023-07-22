@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	"github.com/1karp/go-musthave-shortener-tpl/internal/app/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -59,7 +60,7 @@ func Test_MainHandler(t *testing.T) {
 			body := strings.NewReader(tt.body)
 			request := httptest.NewRequest(tt.method, tt.request, body)
 			w := httptest.NewRecorder()
-			MainHandler(w, request)
+			MainHandler(w, request, storage.NewStorage())
 			result := w.Result()
 
 			err := result.Body.Close()
