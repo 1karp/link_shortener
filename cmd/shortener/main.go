@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/1karp/go-musthave-shortener-tpl/internal/app/config"
-	"github.com/1karp/go-musthave-shortener-tpl/internal/app/server"
-	"github.com/1karp/go-musthave-shortener-tpl/internal/app/storage"
+	"github.com/1karp/link_shortener/internal/app/config"
+	"github.com/1karp/link_shortener/internal/app/server"
+	"github.com/1karp/link_shortener/internal/app/storage"
 )
 
 func main() {

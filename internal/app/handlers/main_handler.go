@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 
-	"github.com/1karp/go-musthave-shortener-tpl/internal/app/storage"
+	"github.com/1karp/link_shortener/internal/app/storage"
 )
 
 const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
