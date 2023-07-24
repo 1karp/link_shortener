@@ -3,9 +3,9 @@ package server
 import (
 	"net/http"
 
-	"github.com/1karp/go-musthave-shortener-tpl/internal/app/config"
-	"github.com/1karp/go-musthave-shortener-tpl/internal/app/handlers"
-	"github.com/1karp/go-musthave-shortener-tpl/internal/app/storage"
+	"github.com/1karp/link_shortener/internal/app/config"
+	"github.com/1karp/link_shortener/internal/app/handlers"
+	"github.com/1karp/link_shortener/internal/app/storage"
 	"github.com/go-chi/chi/v5"
 )
 

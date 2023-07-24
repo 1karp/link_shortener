@@ -1,4 +1,4 @@
-module github.com/1karp/go-musthave-shortener-tpl
+module github.com/1karp/link_shortener
 
 go 1.20
 
