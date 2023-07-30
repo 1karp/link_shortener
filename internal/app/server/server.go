@@ -1,12 +1,16 @@
 package server
 
 import (
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/1karp/link_shortener/internal/app/config"
 	"github.com/1karp/link_shortener/internal/app/handlers"
+	"github.com/1karp/link_shortener/internal/app/logging"
 	"github.com/1karp/link_shortener/internal/app/storage"
 	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 )
 
 type Server struct {
@@ -18,18 +22,27 @@ type Server struct {
 func NewServer(config config.Config, storage storage.Storage) *Server {
 	chiRouter := chi.NewRouter()
 
-	router := &Server{
+	server := &Server{
 		config:  config,
 		router:  chiRouter,
 		storage: storage,
 	}
 
+	logger, err := zap.NewDevelopment()
+
+	if err != nil {
+		log.Fatal("Error initializing logger", err)
+		os.Exit(1)
+	}
+
+	logging.Sugar = logger.Sugar()
+	chiRouter.Use(logging.CustomMiddlewareLogger)
 	chiRouter.Route("/", func(r chi.Router) {
-		r.Post("/", router.MainHandler)
-		r.Get("/{id}", router.ShortenedHandler)
+		r.Post("/", server.MainHandler)
+		r.Get("/{id}", server.ShortenedHandler)
 	})
 
-	return router
+	return server
 }
 
 func (s *Server) MainHandler(rw http.ResponseWriter, req *http.Request) {

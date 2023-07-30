@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/1karp/link_shortener/internal/app/config"
 	"github.com/1karp/link_shortener/internal/app/server"
@@ -11,7 +12,8 @@ import (
 func main() {
 	cfg, err := config.NewConfig()
 	if err != nil {
-		log.Fatalf("No config found: %v", err)
+		log.Fatal("Error loading config", err)
+		os.Exit(1)
 	}
 
 	stor := storage.NewStorage()
@@ -21,6 +23,7 @@ func main() {
 
 	err = server.Start()
 	if err != nil {
-		panic(err)
+		log.Fatal("Server start error", err)
+		os.Exit(1)
 	}
 }
