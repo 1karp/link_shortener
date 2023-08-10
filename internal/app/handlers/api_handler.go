@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/1karp/link_shortener/internal/app/config"
+	"github.com/1karp/link_shortener/internal/app/shortener"
 	"github.com/1karp/link_shortener/internal/app/storage"
 )
 
@@ -32,7 +33,11 @@ func APIShortenHandler(rw http.ResponseWriter, req *http.Request, storage storag
 		return
 	}
 
-	shortCode := generateShortURL()
+	shortCode, err := shortener.GenerateHashedUrl(reqModel.URL)
+	if err != nil {
+		http.Error(rw, "Invalid request", http.StatusBadRequest)
+		return
+	}
 	fullShortURL := generateFullShortURL(cfg.BaseShortURLAddress, shortCode)
 
 	respModel := shortenURLResponse{
