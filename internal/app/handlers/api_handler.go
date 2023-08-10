@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
-	"io"
 	"net/http"
 
 	"github.com/1karp/link_shortener/internal/app/config"
@@ -19,26 +17,35 @@ type shortenURLResponse struct {
 }
 
 func APIShortenHandler(rw http.ResponseWriter, req *http.Request, storage storage.Storage, cfg config.Config) {
-	requestBody, err := parseShortenURLRequest(req)
-	if err != nil {
-		http.Error(rw, "Invalid request body: "+err.Error(), http.StatusBadRequest)
+	var reqModel shortenURLRequest
+
+	jsonDecoder := json.NewDecoder(req.Body)
+	defer req.Body.Close()
+
+	if err := jsonDecoder.Decode(&reqModel); err != nil {
+		http.Error(rw, "Failed to decode request JSON body", http.StatusInternalServerError)
+		return
+	}
+
+	if reqModel.URL == "" {
+		http.Error(rw, "Invalid request: URL missing", http.StatusBadRequest)
 		return
 	}
 
 	shortCode := generateShortURL()
 	fullShortURL := generateFullShortURL(cfg.BaseShortURLAddress, shortCode)
 
-	responseBody := shortenURLResponse{
+	respModel := shortenURLResponse{
 		ShortURL: fullShortURL,
 	}
 
-	data, err := json.Marshal(responseBody)
+	data, err := json.Marshal(respModel)
 	if err != nil {
 		http.Error(rw, "Failed to create response body", http.StatusInternalServerError)
 		return
 	}
 
-	storage.Set(shortCode, requestBody.URL)
+	storage.Set(shortCode, reqModel.URL)
 
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
@@ -50,28 +57,6 @@ func APIShortenHandler(rw http.ResponseWriter, req *http.Request, storage storag
 	}
 }
 
-func parseShortenURLRequest(req *http.Request) (*shortenURLRequest, error) {
-	rawRequestBody, err := io.ReadAll(req.Body)
-	if err != nil {
-		return nil, errors.New("unable to read request body")
-	}
-
-	if !json.Valid(rawRequestBody) {
-		return nil, errors.New("invalid JSON body")
-	}
-
-	var reqBody shortenURLRequest
-	if err := json.Unmarshal(rawRequestBody, &reqBody); err != nil {
-		return nil, errors.New("failed to unmarshal JSON body")
-	}
-
-	if len(reqBody.URL) == 0 {
-		return nil, errors.New("URL missing in the request body")
-	}
-
-	return &reqBody, nil
-}
-
 func generateFullShortURL(baseAddress, code string) string {
-	return baseAddress + "/" + code
+	return baseAddress + code
 }
