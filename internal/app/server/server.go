@@ -40,7 +40,7 @@ func NewServer(config config.Config, storage storage.Storage) *Server {
 	chiRouter.Route("/", func(r chi.Router) {
 		r.Post("/", server.MainHandler)
 		r.Get("/{id}", server.ShortenedHandler)
-		r.Post("/api/shorten", http.HandlerFunc(server.ApiShortenHandler))
+		r.Post("/api/shorten", http.HandlerFunc(server.APIShortenHandler))
 	})
 
 	return server
@@ -54,8 +54,8 @@ func (s *Server) ShortenedHandler(rw http.ResponseWriter, req *http.Request) {
 	handlers.ShortenedHandler(rw, req, s.storage)
 }
 
-func (s *Server) ApiShortenHandler(rw http.ResponseWriter, req *http.Request) {
-	handlers.ApiShortenHandler(rw, req, s.storage, s.config)
+func (s *Server) APIShortenHandler(rw http.ResponseWriter, req *http.Request) {
+	handlers.APIShortenHandler(rw, req, s.storage, s.config)
 }
 
 func (s *Server) Start() error {

@@ -18,7 +18,7 @@ type shortenURLResponse struct {
 	ShortURL string `json:"short_url"`
 }
 
-func ApiShortenHandler(rw http.ResponseWriter, req *http.Request, storage storage.Storage, cfg config.Config) {
+func APIShortenHandler(rw http.ResponseWriter, req *http.Request, storage storage.Storage, cfg config.Config) {
 	requestBody, err := parseShortenURLRequest(req)
 	if err != nil {
 		http.Error(rw, "Invalid request body: "+err.Error(), http.StatusBadRequest)
