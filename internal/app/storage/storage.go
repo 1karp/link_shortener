@@ -1,10 +1,13 @@
 package storage
 
-import "sync"
+import (
+	"errors"
+	"sync"
+)
 
 type Storage interface {
 	Set(shortURL, fullURL string)
-	Get(shortURL string) string
+	Get(shortURL string) (string, error)
 }
 
 type URLStorage struct {
@@ -24,8 +27,13 @@ func (s *URLStorage) Set(shortURL, fullURL string) {
 	s.urlMap[shortURL] = fullURL
 }
 
-func (s *URLStorage) Get(shortURL string) string {
+func (s *URLStorage) Get(shortURL string) (string, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	return s.urlMap[shortURL]
+
+	if url, exists := s.urlMap[shortURL]; exists {
+		return url, nil
+	}
+
+	return "", errors.New("short URL not found")
 }

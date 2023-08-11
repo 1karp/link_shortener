@@ -10,7 +10,7 @@ import (
 func ShortenedHandler(w http.ResponseWriter, r *http.Request, s storage.Storage) {
 	shortURL := chi.URLParam(r, "id")
 
-	if fullURL := s.Get(shortURL); fullURL != "" {
+	if fullURL, _ := s.Get(shortURL); fullURL != "" {
 		w.Header().Add("Location", fullURL)
 		w.WriteHeader(http.StatusTemporaryRedirect)
 		return

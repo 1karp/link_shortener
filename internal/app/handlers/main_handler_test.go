@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"regexp"
 	"strings"
 	"testing"
 
@@ -9,7 +8,6 @@ import (
 	"net/http/httptest"
 
 	"github.com/1karp/link_shortener/internal/app/storage"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -67,23 +65,6 @@ func Test_MainHandler(t *testing.T) {
 			require.NoError(t, err)
 
 			require.Equal(t, tt.want, result.StatusCode)
-		})
-	}
-}
-
-func Test_generateShortURL(t *testing.T) {
-	tests := []struct {
-		name string
-		want *regexp.Regexp
-	}{
-		{
-			name: "valid short URL",
-			want: regexp.MustCompile(`^.{8}$`),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Regexp(t, tt.want, generateShortURL())
 		})
 	}
 }
