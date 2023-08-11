@@ -24,7 +24,7 @@ func APIShortenHandler(rw http.ResponseWriter, req *http.Request, storage storag
 	defer req.Body.Close()
 
 	if err := jsonDecoder.Decode(&reqModel); err != nil {
-		http.Error(rw, "Failed to decode request JSON body", http.StatusInternalServerError)
+		http.Error(rw, "Failed to decode request JSON body", http.StatusBadRequest)
 		return
 	}
 
@@ -33,7 +33,7 @@ func APIShortenHandler(rw http.ResponseWriter, req *http.Request, storage storag
 		return
 	}
 
-	shortCode, err := shortener.GenerateHashedUrl(reqModel.URL)
+	shortCode, err := shortener.GenerateHashedURL(reqModel.URL)
 	if err != nil {
 		http.Error(rw, "Invalid request", http.StatusBadRequest)
 		return
@@ -55,8 +55,7 @@ func APIShortenHandler(rw http.ResponseWriter, req *http.Request, storage storag
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
 
-	_, err = rw.Write(data)
-	if err != nil {
+	if _, err := rw.Write(data); err != nil {
 		http.Error(rw, "Failed to write response", http.StatusInternalServerError)
 		return
 	}

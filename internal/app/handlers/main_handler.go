@@ -29,7 +29,7 @@ func MainHandler(w http.ResponseWriter, r *http.Request, s storage.Storage) {
 	}
 
 	url := string(body)
-	shortURL, _ := shortener.GenerateHashedUrl(url)
+	shortURL, _ := shortener.GenerateHashedURL(url)
 	s.Set(shortURL, url)
 
 	w.WriteHeader(http.StatusCreated)

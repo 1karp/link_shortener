@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 )
 
-func GenerateHashedUrl(url string) (string, error) {
+func GenerateHashedURL(url string) (string, error) {
 	hasher := sha256.New()
 	if _, err := hasher.Write([]byte(url)); err != nil {
 		return "", nil
